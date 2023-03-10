@@ -1,0 +1,75 @@
+import React, { useState, useEffect } from 'react';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@material-ui/core';
+
+function App() {
+  const [tabIndex, setTabIndex] = useState(0);
+  const [data, setData] = useState([]);
+
+  const handleTabClick = (index) => {
+    setTabIndex(index);
+  };
+
+  const handleButtonClick = (client, region) => {
+    const url = `http://10.143.5.240:8080/api/reportsByClient/${client}/${region}`;
+    fetch(url)
+      .then(response => response.json())
+      .then(data => console.log(data))
+      .catch(error => console.log(error));
+  };
+
+  useEffect(() => {
+    const url = 'http://10.143.5.240:8080/api/clientByRegion';
+    fetch(url)
+      .then(response => response.json())
+      .then(data => setData(data))
+      .catch(error => console.log(error));
+  }, []);
+
+  return (
+    <div>
+      <h1>Critical Client Report</h1>
+      <div>
+        <Button onClick={() => handleTabClick(0)}>CriticalClientReportStatus</Button>
+        <Button onClick={() => handleTabClick(1)}>CriticalClientEditReport</Button>
+      </div>
+      {tabIndex === 0 && (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Client</TableCell>
+                <TableCell>Region</TableCell>
+                <TableCell>Status</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {data.map(row => (
+                <TableRow key={row.id}>
+                  <TableCell>{row.client}</TableCell>
+                  <TableCell>{row.region}</TableCell>
+                  <TableCell>
+                    {row.status === 'G' && (
+                      <Button style={{ backgroundColor: 'green' }} onClick={() => handleButtonClick(row.client, row.region)}>
+                        {row.status}
+                      </Button>
+                    )}
+                    {row.status === 'R' && (
+                      <Button style={{ backgroundColor: 'red' }} onClick={() => handleButtonClick(row.client, row.region)}>
+                        {row.status}
+                      </Button>
+                    )}
+                    {row.status === 'Y' && (
+                      <Button style={{ backgroundColor: 'yellow' }} onClick={() => handleButtonClick(row.client, row.region)}>
+                        {row.status}
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+      {tabIndex === 1 && (
+        <div>
+          <h2>CriticalClientEditReport
