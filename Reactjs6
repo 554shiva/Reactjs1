@@ -1,0 +1,99 @@
+import React, { useState, useEffect } from 'react';
+import './App.css';
+
+function App() {
+  const [tab, setTab] = useState('status');
+  const [data, setData] = useState([]);
+
+  const handleTabClick = (tab) => {
+    setTab(tab);
+  };
+
+  useEffect(() => {
+    async function fetchData() {
+      const response = await fetch('http://10.143.5.240:8080/api/clientByRegion');
+      const json = await response.json();
+      setData(json);
+    }
+    fetchData();
+  }, []);
+
+  return (
+    <div className="App">
+      <h1>Critical Client Reporting</h1>
+      <div className="tabs">
+        <button className={tab === 'status' ? 'active' : ''} onClick={() => handleTabClick('status')}>
+          CRITICAL CLIENT REPORTING STATUS
+        </button>
+        <button className={tab === 'edit' ? 'active' : ''} onClick={() => handleTabClick('edit')}>
+          CRITICAL CLIENT EDIT REPORT
+        </button>
+      </div>
+      {tab === 'status' && (
+        <div>
+          <h2>Status</h2>
+        </div>
+      )}
+      {tab === 'edit' && (
+        <div>
+          <h2>Edit Report</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Client/Region Name</th>
+                <th>APAC</th>
+                <th>EMEA</th>
+                <th>NA</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((item) => (
+                <tr key={item.clientId}>
+                  <td>{item.clientName}</td>
+                  <td style={{ backgroundColor: item.status === 'G' ? 'green' : item.status === 'R' ? 'red' : 'yellow' }}>
+                    {item.regionId === 'APAC' ? item.status : '-'}
+                  </td>
+                  <td style={{ backgroundColor: item.status === 'G' ? 'green' : item.status === 'R' ? 'red' : 'yellow' }}>
+                    {item.regionId === 'EMEA' ? item.status : '-'}
+                  </td>
+                  <td style={{ backgroundColor: item.status === 'G' ? 'green' : item.status === 'R' ? 'red' : 'yellow' }}>
+                    {item.regionId === 'NA' ? item.status : '-'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
+
+
+.App {
+  text-align: center;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.tabs button {
+  background-color: #f2f2f2;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.tabs button.active {
+  background-color: #ddd;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100
