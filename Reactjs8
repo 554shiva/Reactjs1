@@ -1,0 +1,111 @@
+import React, { useState, useEffect } from "react";
+import "./App.css";
+
+function App() {
+  const [reportData, setReportData] = useState([]);
+  const [activeTab, setActiveTab] = useState("reportingStatus");
+
+  useEffect(() => {
+    fetchReportData();
+  }, []);
+
+  const fetchReportData = async () => {
+    const url = "https://api.example.com/report-data";
+    const response = await fetch(url);
+    const data = await response.json();
+    setReportData(data);
+  };
+
+  const handleTabClick = (tab) => {
+    setActiveTab(tab);
+  };
+
+  const renderReportingStatus = () => {
+    const regions = {};
+    reportData.forEach((item) => {
+      if (regions[item.regionId]) {
+        regions[item.regionId].push(item);
+      } else {
+        regions[item.regionId] = [item];
+      }
+    });
+
+    return (
+      <div>
+        {Object.keys(regions).map((region) => (
+          <div key={region}>
+            <h3>{region}</h3>
+            <ul>
+              {regions[region].map((item) => (
+                <li key={item.clientId}>
+                  {item.clientName} - {item.status}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderEditReport = () => {
+    return <div>Edit Report Form</div>;
+  };
+
+  return (
+    <div className="App">
+      <h1>Critical Client Reporting</h1>
+      <div className="tab">
+        <button
+          className={activeTab === "reportingStatus" ? "active" : ""}
+          onClick={() => handleTabClick("reportingStatus")}
+        >
+          Critical Client Reporting Status
+        </button>
+        <button
+          className={activeTab === "editReport" ? "active" : ""}
+          onClick={() => handleTabClick("editReport")}
+        >
+          Critical Client Edit Report
+        </button>
+      </div>
+      <div className="content">
+        {activeTab === "reportingStatus"
+          ? renderReportingStatus()
+          : renderEditReport()}
+      </div>
+    </div>
+  );
+}
+
+export default App;
+
+
+
+.tab {
+  overflow: hidden;
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+}
+
+.tab button {
+  background-color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+}
+
+.tab button:hover {
+  background-color: #ddd;
+}
+
+.tab button.active {
+  background-color: #ccc;
+}
+
+.content {
+  padding: 20px;
+}
