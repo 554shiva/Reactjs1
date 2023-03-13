@@ -1,0 +1,116 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Button, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper } from '@material-ui/core';
+
+function App() {
+  const [tabIndex, setTabIndex] = useState(0);
+  const [data, setData] = useState([]);
+
+  const handleTabClick = (index) => {
+    setTabIndex(index);
+  };
+
+  const handleButtonClick = (client, region) => {
+    axios.get(`http://10.143.5.240:8080/api/reportsByClient/${client}/${region}`)
+      .then(response => {
+        // display the response data in a popup or modal window
+        console.log(response.data);
+      })
+      .catch(error => {
+        // handle the error
+        console.log(error);
+      });
+  };
+
+  useEffect(() => {
+    axios.get('data.json')
+      .then(response => {
+        // set the response data in the data state variable
+        const processedData = Object.values(
+          response.data.reduce(
+            (dataObj, current) => ({
+              ...dataObj,
+              [current.clientId]: {
+                ...dataObj[current.clientId],
+                clientId: current.clientId,
+                clientName: current.clientName,
+                regions: (dataObj[current.clientId]?.regions || []).concat({
+                  regionId: current.regionId,
+                  status: current.status,
+                 
+                })
+              }
+            }),
+            {}
+          )
+        );
+        setData(processedData);
+      })
+      .catch(error => {
+        // handle the error
+        console.log(error);
+      });
+  }, []);
+
+  return (
+    <div>
+      <h1>Critical Client Report</h1>
+      <div>
+        <Button onClick={() => handleTabClick(0)}>CriticalClientReportStatus</Button>
+        <Button onClick={() => handleTabClick(1)}>CriticalClientEditReport</Button>
+      </div>
+      {tabIndex === 0 && (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Client Name</TableCell>
+                <TableCell>APAC</TableCell>
+                <TableCell>EMEA</TableCell>
+                <TableCell>NA</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+            {data.map((row) => {
+            return (
+              <tr key={row.clientId}>
+                <td>{row.clientName}</td>
+                {
+                  row.regions.map((region) => (
+                    <td key={region.regionId}>
+                     {region.status === 'G' && (
+                      <Button style={{ backgroundColor: 'green' }} onClick={() => handleButtonClick(row.clientId, region.regionId)}>
+                        {region.status}
+                      </Button>
+                      )}
+                     {region.status === 'R' && (
+                      <Button style={{ backgroundColor: 'red' }} onClick={() => handleButtonClick(row.clientId, region.regionId)}>
+                        {region.status}
+                      </Button>
+                     )}
+                     {region.status === 'Y' && (
+                      <Button style={{ backgroundColor: 'yellow' }} onClick={() => handleButtonClick(row.clientId, region.regionId)}>
+                        {region.status}
+                      </Button>
+                     )}
+                    </td>
+                  ))
+                }
+              </tr>
+            );
+          })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+      {tabIndex === 1 && (
+        <div>
+          <h2>CriticalClientEditReport</h2>
+        
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
