@@ -1,0 +1,68 @@
+const [radioButtonValue, setRadioButtonValue] = useState("send-email-to-myself");
+const [comments, setComments] = useState("");
+
+
+
+{tabIndex === 1 && (
+  <div>
+    <h2>CriticalClientEditReport</h2>
+    <div>
+      <input type="radio" id="send-email-to-myself" name="email" value="send-email-to-myself" checked={radioButtonValue === "send-email-to-myself"} onChange={() => setRadioButtonValue("send-email-to-myself")} />
+      <label htmlFor="send-email-to-myself">Send email to myself</label>
+    </div>
+    <div>
+      <input type="radio" id="send-email-to-all" name="email" value="send-email-to-all" checked={radioButtonValue === "send-email-to-all"} onChange={() => setRadioButtonValue("send-email-to-all")} />
+      <label htmlFor="send-email-to-all">Send email to all</label>
+    </div>
+    <div>
+      <label htmlFor="comments">Comments:</label>
+      <textarea id="comments" name="comments" rows="4" cols="50" value={comments} onChange={(event) => setComments(event.target.value)}></textarea>
+    </div>
+    <TableContainer component={Paper}>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Client/Region Name</TableCell>
+            <TableCell>APAC</TableCell>
+            <TableCell>EMEA</TableCell>
+            <TableCell>NA</TableCell>
+            <TableCell>Comment</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+        {data.map((row) => {
+        return (
+          <TableRow key={row.clientId}>
+            <TableCell>{row.clientName}</TableCell>
+            {
+              row.regions.map((region) => (
+                <TableCell key={region.regionId}>
+                  {region.status === 'G' && (
+                    <Button style={{ backgroundColor: 'green' }} onClick={() => handleButtonClick(row.clientId, region.regionId)}>
+                      {region.status}
+                    </Button>
+                  )}
+                  {region.status === 'R' && (
+                    <Button style={{ backgroundColor: 'red' }} onClick={() => handleButtonClick(row.clientId, region.regionId)}>
+                      {region.status}
+                    </Button>
+                  )}
+                  {region.status === 'Y' && (
+                    <Button style={{ backgroundColor: 'yellow' }} onClick={() => handleButtonClick(row.clientId, region.regionId)}>
+                      {region.status}
+                    </Button>
+                  )}
+                </TableCell>
+              ))
+            }
+            <TableCell>
+              <textarea value={comments} onChange={(event) => setComments(event.target.value)}></textarea>
+            </TableCell>
+          </TableRow>
+        );
+      })}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  </div>
+)}
