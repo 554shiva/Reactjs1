@@ -1,0 +1,152 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Button, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper } from '@material-ui/core';
+
+function App() {
+    const [tabIndex, setTabIndex] = useState(0);
+    const [data, setData] = useState([]);
+
+    const [radioButtonValue, setRadioButtonValue] = useState("send-email-to-myself");
+    const [comments, setComments] = useState("");
+
+    const handleTabClick = (index) => {
+        setTabIndex(index);
+    };
+
+    const handleButtonClick = (client, region) => {
+        axios.get(`http://10.143.5.240:8080/api/reportsByClient/${client}/${region}`)
+            .then(response => {
+                // display the response data in a popup or modal window
+                console.log(response.data);
+            })
+            .catch(error => {
+                // handle the error
+                console.log(error);
+            });
+    };
+
+    useEffect(() => {
+        axios.get('data.json')
+            .then(response => {
+                // set the response data in the data state variable
+                const processedData = Object.values(
+                    response.data.reduce(
+                        (dataObj, current) => ({
+                            ...dataObj,
+                            [current.clientId]: {
+                                ...dataObj[current.clientId],
+                                clientId: current.clientId,
+                                clientName: current.clientName,
+                                regions: (dataObj[current.clientId]?.regions || []).concat({
+                                    regionId: current.regionId,
+                                    status: current.status,
+
+                                })
+                            }
+                        }),
+                        {}
+                    )
+                );
+                setData(processedData);
+            })
+            .catch(error => {
+                // handle the error
+                console.log(error);
+            });
+    }, []);
+
+    return (
+        <div>
+            <h1>Critical Client Report</h1>
+            <div>
+                <Button onClick={() => handleTabClick(0)}>CriticalClientReportStatus</Button>
+                <Button onClick={() => handleTabClick(1)}>CriticalClientEditReport</Button>
+            </div>
+            {tabIndex === 0 && (
+                <TableContainer component={Paper}>
+                    <Table>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Client Name</TableCell>
+                                <TableCell>APAC</TableCell>
+                                <TableCell>EMEA</TableCell>
+                                <TableCell>NA</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {data.map((row) => {
+                                return (
+                                    <TableRow key={row.clientId}>
+                                        <TableCell>{row.clientName}</TableCell>
+                                        {
+                                            row.regions.map((region) => (
+                                                <TableCell key={region.regionId}>
+                                                    <Button style={{ backgroundColor: region.status === 'G' ? 'green' : region.status === 'R' ? 'red' : 'yellow' , height:"2em"}} onClick={() => handleButtonClick(region.regionId)}>
+                                                    </Button>
+                                                </TableCell>
+                                            ))
+                                        }
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            )}
+            {tabIndex === 1 && (
+                <div>
+                    <h2>CriticalClientEditReport</h2>
+                    <div>
+                        <input type="radio" id="send-email-to-myself" name="email" value="send-email-to-myself" checked={radioButtonValue === "send-email-to-myself"} onChange={() => setRadioButtonValue("send-email-to-myself")} />
+                        <label htmlFor="send-email-to-myself">Send email to myself</label>
+                    </div>
+                    <div>
+                        <input type="radio" id="send-email-to-all" name="email" value="send-email-to-all" checked={radioButtonValue === "send-email-to-all"} onChange={() => setRadioButtonValue("send-email-to-all")} />
+                        <label htmlFor="send-email-to-all">Send email to all</label>
+                    </div>
+                    <div>
+                        <label htmlFor="comments">Comments:</label>
+                        <textarea id="comments" name="comments" rows="4" cols="50" value={comments} onChange={(event) => setComments(event.target.value)}></textarea>
+                    </div>
+                    <TableContainer component={Paper}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Client/Region Name</TableCell>
+                                    <TableCell>APAC</TableCell>
+                                    <TableCell>EMEA</TableCell>
+                                    <TableCell>NA</TableCell>
+                                    <TableCell>Comment</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {data.map((row) => {
+                                    return (
+                                        <TableRow key={row.clientId}>
+                                            <TableCell>{row.clientName}</TableCell>
+                                            {
+                                                row.regions.map((region) => (
+                                                    <TableCell key={region.regionId}>
+                                                        <Button style={{ backgroundColor: region.status === 'G' ? 'green' : region.status === 'R' ? 'red' : 'yellow' ,height:"2em" }} onClick={() => handleButtonClick(region.regionId)}>
+                                                        </Button>
+                                                    </TableCell>
+                                                ))
+                                            }
+                                            {
+                                            <TableCell>
+                                                <textarea value={comments} onChange={(event) => setComments(event.target.value)}></textarea>
+                                            </TableCell>
+                                           }
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </div>
+            )}
+        </div>
+    );
+}
+
+export default App;
