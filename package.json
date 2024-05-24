@@ -1,0 +1,2 @@
+"test:react": "jest --config jest.config.js --no-cache --passWithNoTests",
+"test:react:watch": "jest --config jest.config.js --no-cache --passWithNoTests --watch"
